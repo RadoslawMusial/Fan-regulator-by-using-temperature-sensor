@@ -1,19 +1,15 @@
 #include <DHT.h>
-#include <Servo.h>
 
 #define DHTPIN 10     
 #define DHTTYPE DHT11 
-int speed = 128; 
 int PWM_PIN = 9;
 DHT dht(DHTPIN, DHTTYPE);
-Servo myServo;
 
 unsigned long lastMoveTime = 0;
 const int moveInterval = 100;
-int servoPos = 0;
 
 void setup() {
-  myServo.attach(8); 
+  pinMode(PWM_PIN, OUTPUT); // Ustawienie pinu jako wyjście do sterowania PWM
   Serial.begin(9600);
   dht.begin();
 }
@@ -38,19 +34,17 @@ void loop() {
   unsigned long currentTime = millis();
 
   if (t >= 31) {
+    analogWrite(PWM_PIN, 255); // Ustawienie PWM na 255 (maksymalna prędkość wiatraka)
     if (currentTime - lastMoveTime >= moveInterval) {
-      myServo.write(servoPos);
-      servoPos++;
-      Serial.print(servoPos);
-      if (servoPos > 180) {
-        servoPos = 0;
-      }
+      Serial.print("Wiatrak obrót: ");
+      Serial.print(currentTime / 100); // Wyświetlenie obrotów wiatraka (czas w dziesiątkach milisekund)
+      Serial.println(" RPM");
       lastMoveTime = currentTime;
-      Serial.print(lastMoveTime);
     }
   } else if (t < 31) {
+    analogWrite(PWM_PIN, 128); // Ustawienie PWM na 128 (połowa maksymalnej prędkości wiatraka)
     if (currentTime - lastMoveTime >= moveInterval) {
-      myServo.write(90);
+      Serial.println("Wiatrak zatrzymany");
       lastMoveTime = currentTime;
     }
   }
